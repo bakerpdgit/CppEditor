@@ -79,3 +79,39 @@ html, body {
   box-sizing: border-box;
   padding: 8px;
 }
+
+.options-container {
+  position: relative;
+}
+
+.options-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  z-index: 10;
+}
+
+.options-menu.open {
+  display: block;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  background: #ffffff;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to {
+    background: transparent;
+  }
+  50% {
+    background: #ffffff;
+  }
+}
