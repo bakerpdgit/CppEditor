@@ -2,7 +2,19 @@ const base = 'https://binji.github.io/wasm-clang/';
 
 importScripts(base + 'shared.js');
 
-const api = new API({
+let api;
+let eofWarned = false;
+
+function hostRead(fd, buffer, offset, length, position) {
+  const bytes = api.memfs.readSync(fd, buffer, offset, length, position);
+  if (fd === 0 && bytes === 0 && !eofWarned) {
+    eofWarned = true;
+    postMessage({ type: 'stderr', data: 'EOFError: insufficient input provided\n' });
+  }
+  return bytes;
+}
+
+api = new API({
   readBuffer: async (path) => {
     const response = await fetch(base + path);
     return response.arrayBuffer();
@@ -23,12 +35,14 @@ const api = new API({
     }
     return WebAssembly.compile(await response.arrayBuffer());
   },
-  hostWrite: (s) => postMessage({ type: 'stdout', data: s })
+  hostWrite: (s) => postMessage({ type: 'stdout', data: s }),
+  hostRead
 });
 
 onmessage = async (e) => {
   const { code, input } = e.data;
   try {
+    eofWarned = false;
     api.memfs.setStdinStr(input || '');
     await api.compileLinkRun(code);
     postMessage({ type: 'done' });
