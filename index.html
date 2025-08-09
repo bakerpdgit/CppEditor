@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser C++ Editor</title>
+  <!-- Material Design Components -->
+  <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+  <script defer src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <!-- Monaco -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="mdc-typography">
+  <header class="mdc-top-app-bar mdc-top-app-bar--fixed">
+    <div class="mdc-top-app-bar__row">
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+        <span class="mdc-top-app-bar__title">C++ Web Editor</span>
+      </section>
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+        <button id="run" class="mdc-button mdc-button--raised">
+          <span class="mdc-button__label">Run</span>
+        </button>
+      </section>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <div id="editor" class="editor"></div>
+    <div id="resizer" class="resizer"></div>
+    <div id="bottom-pane" class="bottom-pane">
+      <div class="tabs">
+        <button id="tab-console" class="tab active">Console</button>
+        <button id="tab-input" class="tab">Input</button>
+      </div>
+      <div id="console-panel" class="panel active"><pre id="output"></pre></div>
+      <div id="input-panel" class="panel"><textarea id="stdin" placeholder="Program input..."></textarea></div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
