@@ -14,52 +14,53 @@ require(['vs/editor/editor.main'], function () {
 });
 
 // Worker setup
-const worker = new Worker('worker.js');
-const output = document.getElementById('output');
+const worker = new Worker("worker.js");
+const output = document.getElementById("output");
 worker.onmessage = (e) => {
   const { type, data } = e.data;
-  if (type === 'stdout' || type === 'stderr') {
-    const clean = data.replace(/\x1b\[1;93m>\x1b\[0m/g, '');
+  if (type === "stdout" || type === "stderr") {
+    const clean = data.replace(/\x1b\[1;93m>\x1b\[0m/g, "> ");
     output.textContent += clean;
   }
 };
 
 // Run button
-document.getElementById('run').addEventListener('click', () => {
-  output.textContent = '';
+document.getElementById("run").addEventListener("click", () => {
+  output.textContent = "";
   const code = editor.getValue();
-  const input = document.getElementById('stdin').value;
+  let input = document.getElementById("stdin").value;
+  if (input === "") input = "\n";
   worker.postMessage({ code, input });
-  setActiveTab('console');
+  setActiveTab("console");
 });
 
 // Tabs
 function setActiveTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  if (tab === 'console') {
-    document.getElementById('tab-console').classList.add('active');
-    document.getElementById('console-panel').classList.add('active');
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  if (tab === "console") {
+    document.getElementById("tab-console").classList.add("active");
+    document.getElementById("console-panel").classList.add("active");
   } else {
-    document.getElementById('tab-input').classList.add('active');
-    document.getElementById('input-panel').classList.add('active');
+    document.getElementById("tab-input").classList.add("active");
+    document.getElementById("input-panel").classList.add("active");
   }
 }
 
-document.getElementById('tab-console').addEventListener('click', () => setActiveTab('console'));
-document.getElementById('tab-input').addEventListener('click', () => setActiveTab('input'));
+document.getElementById("tab-console").addEventListener("click", () => setActiveTab("console"));
+document.getElementById("tab-input").addEventListener("click", () => setActiveTab("input"));
 
-// Resizer
-const resizer = document.getElementById('resizer');
-const bottomPane = document.getElementById('bottom-pane');
-const mainContent = document.querySelector('.main-content');
-let isResizing = false;
+// Pane size controls
+const editorContainer = document.getElementById("editor");
+const bottomPane = document.getElementById("bottom-pane");
 
-resizer.addEventListener('mousedown', () => { isResizing = true; });
-document.addEventListener('mousemove', (e) => {
-  if (!isResizing) return;
-  const mainRect = mainContent.getBoundingClientRect();
-  const newHeight = mainRect.bottom - e.clientY;
-  bottomPane.style.height = Math.max(100, newHeight) + 'px';
-});
-document.addEventListener('mouseup', () => { isResizing = false; });
+function setPaneSizes(editorPercent, bottomPercent) {
+  editorContainer.style.flex = `0 0 ${editorPercent}%`;
+  bottomPane.style.flex = `0 0 ${bottomPercent}%`;
+  if (editor) editor.layout();
+}
+
+document.getElementById("maximize").addEventListener("click", () => setPaneSizes(20, 80));
+document.getElementById("minimize").addEventListener("click", () => setPaneSizes(30, 70));
+
+setPaneSizes(20, 80);
