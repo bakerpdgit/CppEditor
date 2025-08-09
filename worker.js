@@ -1,6 +1,7 @@
 const base = "https://binji.github.io/wasm-clang/";
 
-importScripts(base + "shared.js");
+// Load a local copy of the wasm-clang helper to satisfy cross-origin isolation.
+importScripts("shared.js");
 
 let api;
 let eofWarned = false;

@@ -17,7 +17,8 @@ The compiled module executes in a Web Worker and its output is shown in a consol
 ## Running
 
 Open `index.html` in a browser. No server is required, but all assets must be
-served over HTTP(s). The worker downloads the compiler toolchain from
+served over HTTP(s). The worker bundles a local copy of `shared.js` and downloads
+the remainder of the compiler toolchain from
 `https://binji.github.io/wasm-clang/`.
 
 To deploy on GitHub Pages or similar static hosts simply publish the repository
