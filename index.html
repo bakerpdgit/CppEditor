@@ -21,6 +21,10 @@
         <button id="run" class="mdc-button mdc-button--raised">
           <span class="mdc-button__label">Run</span>
         </button>
+        <button id="more" class="mdc-button">...</button>
+        <div id="more-menu" class="menu">
+          <label><input type="checkbox" id="fixed-toggle" /> Use fixed inputs</label>
+        </div>
       </section>
     </div>
   </header>
@@ -34,10 +38,13 @@
       </div>
       <div class="tabs">
         <button id="tab-console" class="tab active">Console</button>
-        <button id="tab-input" class="tab">Input</button>
+        <button id="tab-input" class="tab" style="display: none;">Input</button>
       </div>
-      <div id="console-panel" class="panel active"><pre id="output"></pre></div>
-      <div id="input-panel" class="panel"><textarea id="stdin" placeholder="Program input..."></textarea></div>
+      <div id="console-panel" class="panel active">
+        <pre id="output"></pre>
+        <textarea id="console-input" class="console-input" spellcheck="false"></textarea>
+      </div>
+      <div id="input-panel" class="panel" style="display: none;"><textarea id="stdin" placeholder="Program input..."></textarea></div>
     </div>
   </div>
 

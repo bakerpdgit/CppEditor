@@ -9,7 +9,8 @@ The compiled module executes in a Web Worker and its output is shown in a consol
 
 - Material Design layout with Monaco editor
 - Split view with resizable output panel
-- Console and input tabs. Text typed in the input tab is provided on `stdin`.
+- Console accepts interactive input by default. A menu next to the Run button
+  allows toggling a fixed input pane whose contents are piped to `stdin`.
 - Compilation and execution happen in a Web Worker so the UI stays responsive.
 
 ## Running

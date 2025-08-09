@@ -4,8 +4,27 @@ importScripts(base + "shared.js");
 
 let api;
 let eofWarned = false;
+let stdinBuffer = new Uint8Array(0);
+let stdinPos = 0;
+let interactive = false;
+const inputSignal = new Int32Array(new SharedArrayBuffer(4));
 
 function hostRead(fd, buffer, offset, length, position) {
+  if (interactive && fd === 0) {
+    if (stdinPos >= stdinBuffer.length) {
+      postMessage({ type: "requestInput" });
+      Atomics.store(inputSignal, 0, 0);
+      Atomics.wait(inputSignal, 0, 0);
+    }
+    const toCopy = Math.min(length, stdinBuffer.length - stdinPos);
+    buffer.set(stdinBuffer.subarray(stdinPos, stdinPos + toCopy), offset);
+    stdinPos += toCopy;
+    if (stdinPos >= stdinBuffer.length) {
+      stdinBuffer = new Uint8Array(0);
+      stdinPos = 0;
+    }
+    return toCopy;
+  }
   const bytes = api.memfs.readSync(fd, buffer, offset, length, position);
   if (fd === 0 && bytes === 0 && !eofWarned) {
     eofWarned = true;
@@ -40,13 +59,24 @@ api = new API({
 });
 
 onmessage = async (e) => {
-  const { code, input } = e.data;
-  try {
-    eofWarned = false;
-    api.memfs.setStdinStr(input);
-    await api.compileLinkRun(code);
-    postMessage({ type: "done" });
-  } catch (err) {
-    postMessage({ type: "stderr", data: err.toString() + "\n" });
+  const { type } = e.data;
+  if (type === "run") {
+    const { code, input } = e.data;
+    try {
+      eofWarned = false;
+      stdinBuffer = new Uint8Array(0);
+      stdinPos = 0;
+      interactive = input === undefined;
+      if (!interactive) api.memfs.setStdinStr(input);
+      await api.compileLinkRun(code);
+      postMessage({ type: "done" });
+    } catch (err) {
+      postMessage({ type: "stderr", data: err.toString() + "\n" });
+    }
+  } else if (type === "input") {
+    stdinBuffer = new TextEncoder().encode(e.data.data);
+    stdinPos = 0;
+    Atomics.store(inputSignal, 0, 1);
+    Atomics.notify(inputSignal, 0);
   }
 };

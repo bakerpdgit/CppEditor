@@ -79,3 +79,31 @@ html, body {
   box-sizing: border-box;
   padding: 8px;
 }
+
+#console-panel {
+  position: relative;
+}
+
+.console-input {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  color: inherit;
+  border: none;
+  outline: none;
+  font-family: monospace;
+  padding: 8px;
+}
+
+.menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
