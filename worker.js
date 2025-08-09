@@ -4,14 +4,42 @@ importScripts(base + "shared.js");
 
 let api;
 let eofWarned = false;
+let sharedControl;
+let sharedData;
+let interactive = true;
 
 function hostRead(fd, buffer, offset, length, position) {
-  const bytes = api.memfs.readSync(fd, buffer, offset, length, position);
-  if (fd === 0 && bytes === 0 && !eofWarned) {
-    eofWarned = true;
-    postMessage({ type: "stderr", data: "EOFError: insufficient input provided\n" });
+  if (fd !== 0) {
+    return api.memfs.readSync(fd, buffer, offset, length, position);
   }
-  return bytes;
+  let bytesRead = 0;
+  while (bytesRead < length) {
+    let available = Atomics.load(sharedControl, 1);
+    if (available === 0) {
+      if (!interactive) {
+        if (!eofWarned) {
+          eofWarned = true;
+          postMessage({ type: "stderr", data: "EOFError: insufficient input provided\n" });
+        }
+        return bytesRead;
+      }
+      Atomics.store(sharedControl, 0, 0);
+      postMessage({ type: "stdin-request" });
+      Atomics.wait(sharedControl, 0, 0);
+      available = Atomics.load(sharedControl, 1);
+      if (available === 0) return bytesRead;
+    }
+    const toCopy = Math.min(length - bytesRead, available);
+    for (let i = 0; i < toCopy; i++) {
+      buffer[offset + bytesRead + i] = sharedData[i];
+    }
+    if (available > toCopy) {
+      sharedData.copyWithin(0, toCopy, available);
+    }
+    Atomics.store(sharedControl, 1, available - toCopy);
+    bytesRead += toCopy;
+  }
+  return bytesRead;
 }
 
 api = new API({
@@ -40,10 +68,12 @@ api = new API({
 });
 
 onmessage = async (e) => {
-  const { code, input } = e.data;
+  const { code, sab, useFixed } = e.data;
   try {
     eofWarned = false;
-    api.memfs.setStdinStr(input);
+    sharedControl = new Int32Array(sab, 0, 2);
+    sharedData = new Uint8Array(sab, 8);
+    interactive = !useFixed;
     await api.compileLinkRun(code);
     postMessage({ type: "done" });
   } catch (err) {
