@@ -1,6 +1,6 @@
-const base = 'https://binji.github.io/wasm-clang/';
+const base = "https://binji.github.io/wasm-clang/";
 
-importScripts(base + 'shared.js');
+importScripts(base + "shared.js");
 
 let api;
 let eofWarned = false;
@@ -9,7 +9,7 @@ function hostRead(fd, buffer, offset, length, position) {
   const bytes = api.memfs.readSync(fd, buffer, offset, length, position);
   if (fd === 0 && bytes === 0 && !eofWarned) {
     eofWarned = true;
-    postMessage({ type: 'stderr', data: 'EOFError: insufficient input provided\n' });
+    postMessage({ type: "stderr", data: "EOFError: insufficient input provided\n" });
   }
   return bytes;
 }
@@ -28,14 +28,14 @@ api = new API({
     // In that case fall back to compiling from an ArrayBuffer instead.
     if (
       WebAssembly.compileStreaming &&
-      response.headers.get('Content-Type') === 'application/wasm'
+      response.headers.get("Content-Type") === "application/wasm"
     ) {
       // Use the already-fetched response for streaming compilation.
       return WebAssembly.compileStreaming(Promise.resolve(response));
     }
     return WebAssembly.compile(await response.arrayBuffer());
   },
-  hostWrite: (s) => postMessage({ type: 'stdout', data: s }),
+  hostWrite: (s) => postMessage({ type: "stdout", data: s }),
   hostRead
 });
 
@@ -43,10 +43,10 @@ onmessage = async (e) => {
   const { code, input } = e.data;
   try {
     eofWarned = false;
-    api.memfs.setStdinStr(input || '');
+    api.memfs.setStdinStr(input);
     await api.compileLinkRun(code);
-    postMessage({ type: 'done' });
+    postMessage({ type: "done" });
   } catch (err) {
-    postMessage({ type: 'stderr', data: err.toString() + '\n' });
+    postMessage({ type: "stderr", data: err.toString() + "\n" });
   }
 };
