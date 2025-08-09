@@ -44,7 +44,7 @@ api.memfs.host_read = function (fd, iovs, iovs_len, nread) {
       iovs += 4;
       const len = mem.read32(iovs);
       iovs += 4;
-      if (stdinPos >= stdinBuffer.length) {
+      while (stdinPos >= stdinBuffer.length) {
         if (inputSignal) {
           postMessage({ type: "requestInput" });
           Atomics.store(inputSignal, 0, 0);
@@ -55,12 +55,16 @@ api.memfs.host_read = function (fd, iovs, iovs_len, nread) {
             stdinPos = 0;
             Atomics.store(inputSignal, 1, 0);
           } else {
-            break;
+            postMessage({ type: "stderr", data: "EOF\n" });
+            interactive = false;
+            mem.write32(nread, size);
+            return ESUCCESS;
           }
         } else {
           postMessage({ type: "stderr", data: "Interactive input not supported in this browser.\n" });
           interactive = false;
-          break;
+          mem.write32(nread, size);
+          return ESUCCESS;
         }
       }
       const toCopy = Math.min(len, stdinBuffer.length - stdinPos);
