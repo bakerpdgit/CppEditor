@@ -9,9 +9,7 @@ let stdinBuffer = new Uint8Array(0);
 let stdinPos = 0;
 let interactive = false;
 let inputSignal = null;
-if (typeof SharedArrayBuffer !== "undefined") {
-  inputSignal = new Int32Array(new SharedArrayBuffer(4));
-}
+let sharedInput = null;
 
 function hostRead(fd, buffer, offset, length, position) {
   if (interactive && fd === 0) {
@@ -20,6 +18,14 @@ function hostRead(fd, buffer, offset, length, position) {
         postMessage({ type: "requestInput" });
         Atomics.store(inputSignal, 0, 0);
         Atomics.wait(inputSignal, 0, 0);
+        const len = Atomics.load(inputSignal, 1);
+        if (len > 0 && sharedInput) {
+          stdinBuffer = new Uint8Array(sharedInput.subarray(0, len));
+          stdinPos = 0;
+          Atomics.store(inputSignal, 1, 0);
+        } else {
+          return 0;
+        }
       } else {
         postMessage({ type: "stderr", data: "Interactive input not supported in this browser.\n" });
         interactive = false;
@@ -71,24 +77,22 @@ api = new API({
 onmessage = async (e) => {
   const { type } = e.data;
   if (type === "run") {
-    const { code, input } = e.data;
+    const { code, input, signal, buffer } = e.data;
     try {
       eofWarned = false;
       stdinBuffer = new Uint8Array(0);
       stdinPos = 0;
       interactive = input === undefined;
-      if (!interactive) api.memfs.setStdinStr(input);
+      if (!interactive) {
+        api.memfs.setStdinStr(input);
+      } else {
+        inputSignal = signal;
+        sharedInput = new Uint8Array(buffer);
+      }
       await api.compileLinkRun(code);
       postMessage({ type: "done" });
     } catch (err) {
       postMessage({ type: "stderr", data: err.toString() + "\n" });
-    }
-  } else if (type === "input") {
-    stdinBuffer = new TextEncoder().encode(e.data.data);
-    stdinPos = 0;
-    if (inputSignal) {
-      Atomics.store(inputSignal, 0, 1);
-      Atomics.notify(inputSignal, 0);
     }
   }
 };

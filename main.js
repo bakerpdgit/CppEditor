@@ -24,6 +24,8 @@ const moreBtn = document.getElementById("more");
 const moreMenu = document.getElementById("more-menu");
 let useFixed = typeof SharedArrayBuffer === "undefined";
 let awaiting = false;
+let inputSignal;
+let inputBuffer;
 
 if (useFixed) {
   fixedToggle.checked = true;
@@ -60,7 +62,9 @@ document.getElementById("run").addEventListener("click", () => {
     if (input === "") input = "\n";
     worker.postMessage({ type: "run", code, input });
   } else {
-    worker.postMessage({ type: "run", code });
+    inputSignal = new Int32Array(new SharedArrayBuffer(8));
+    inputBuffer = new Uint8Array(new SharedArrayBuffer(65536));
+    worker.postMessage({ type: "run", code, signal: inputSignal, buffer: inputBuffer.buffer });
   }
   setActiveTab("console");
 });
@@ -74,7 +78,11 @@ consoleInput.addEventListener("keydown", (e) => {
     output.parentElement.scrollTop = output.parentElement.scrollHeight;
     consoleInput.style.display = "none";
     awaiting = false;
-    worker.postMessage({ type: "input", data: value + "\n" });
+    const bytes = new TextEncoder().encode(value + "\n");
+    inputBuffer.set(bytes);
+    Atomics.store(inputSignal, 1, bytes.length);
+    Atomics.store(inputSignal, 0, 1);
+    Atomics.notify(inputSignal, 0);
   }
 });
 
