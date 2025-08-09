@@ -25,7 +25,9 @@ contents. For interactive console input the page must be served with
 `Cross-Origin-Opener-Policy: same-origin` and
 `Cross-Origin-Embedder-Policy: require-corp` headers (or equivalent
 `<meta http-equiv>` tags) so that `SharedArrayBuffer` is available. Without these
-headers the editor falls back to the fixed input pane.
+headers the editor falls back to the fixed input pane. Cloudflare Pages supports
+these policies via a `_headers` file at the project root, which is included in
+this repository for convenience.
 
 ## Acknowledgements
 
