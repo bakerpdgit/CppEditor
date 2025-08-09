@@ -8,10 +8,19 @@ const api = new API({
     return response.arrayBuffer();
   },
   compileStreaming: async (path) => {
-    if (WebAssembly.compileStreaming) {
-      return WebAssembly.compileStreaming(fetch(base + path));
+    const url = base + path;
+    const response = await fetch(url);
+    // WebAssembly.compileStreaming requires the server to return the
+    // `application/wasm` MIME type. Some environments (e.g. when serving
+    // files locally) don't provide this header, which causes a TypeError.
+    // In that case fall back to compiling from an ArrayBuffer instead.
+    if (
+      WebAssembly.compileStreaming &&
+      response.headers.get('Content-Type') === 'application/wasm'
+    ) {
+      // Use the already-fetched response for streaming compilation.
+      return WebAssembly.compileStreaming(Promise.resolve(response));
     }
-    const response = await fetch(base + path);
     return WebAssembly.compile(await response.arrayBuffer());
   },
   hostWrite: (s) => postMessage({ type: 'stdout', data: s })
