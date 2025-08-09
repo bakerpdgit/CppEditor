@@ -19,7 +19,8 @@ const output = document.getElementById('output');
 worker.onmessage = (e) => {
   const { type, data } = e.data;
   if (type === 'stdout' || type === 'stderr') {
-    output.textContent += data;
+    const clean = data.replace(/\x1b\[1;93m>\x1b\[0m/g, '');
+    output.textContent += clean;
   }
 };
 
