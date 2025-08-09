@@ -364,11 +364,11 @@ class App {
           return true;
         }
         // Don't allow rAF unless you return the right code.
-        console.log(`Disallowing rAF since exit code is ${exn.code}.`);
         this.allowRequestAnimationFrame = false;
         if (exn.code == 0) {
           return false;
         }
+        console.log(`Disallowing rAF since exit code is ${exn.code}.`);
         writeStack = false;
       }
 
