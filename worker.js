@@ -4,50 +4,11 @@ const base = "https://binji.github.io/wasm-clang/";
 importScripts("shared.js");
 
 let api;
-let eofWarned = false;
 let stdinBuffer = new Uint8Array(0);
 let stdinPos = 0;
 let interactive = false;
 let inputSignal = null;
 let sharedInput = null;
-
-function hostRead(fd, buffer, offset, length, position) {
-  if (interactive && fd === 0) {
-    if (stdinPos >= stdinBuffer.length) {
-      if (inputSignal) {
-        postMessage({ type: "requestInput" });
-        Atomics.store(inputSignal, 0, 0);
-        Atomics.wait(inputSignal, 0, 0);
-        const len = Atomics.load(inputSignal, 1);
-        if (len > 0 && sharedInput) {
-          stdinBuffer = new Uint8Array(sharedInput.subarray(0, len));
-          stdinPos = 0;
-          Atomics.store(inputSignal, 1, 0);
-        } else {
-          return 0;
-        }
-      } else {
-        postMessage({ type: "stderr", data: "Interactive input not supported in this browser.\n" });
-        interactive = false;
-        return 0;
-      }
-    }
-    const toCopy = Math.min(length, stdinBuffer.length - stdinPos);
-    buffer.set(stdinBuffer.subarray(stdinPos, stdinPos + toCopy), offset);
-    stdinPos += toCopy;
-    if (stdinPos >= stdinBuffer.length) {
-      stdinBuffer = new Uint8Array(0);
-      stdinPos = 0;
-    }
-    return toCopy;
-  }
-  const bytes = api.memfs.readSync(fd, buffer, offset, length, position);
-  if (fd === 0 && bytes === 0 && !eofWarned) {
-    eofWarned = true;
-    postMessage({ type: "stderr", data: "EOFError: insufficient input provided\n" });
-  }
-  return bytes;
-}
 
 api = new API({
   readBuffer: async (path) => {
@@ -70,16 +31,61 @@ api = new API({
     }
     return WebAssembly.compile(await response.arrayBuffer());
   },
-  hostWrite: (s) => postMessage({ type: "stdout", data: s }),
-  hostRead
+  hostWrite: (s) => postMessage({ type: "stdout", data: s })
 });
+
+const originalHostRead = api.memfs.host_read.bind(api.memfs);
+api.memfs.host_read = function (fd, iovs, iovs_len, nread) {
+  if (interactive && fd === 0) {
+    const mem = this.hostMem_;
+    let size = 0;
+    for (let i = 0; i < iovs_len; ++i) {
+      const buf = mem.read32(iovs);
+      iovs += 4;
+      const len = mem.read32(iovs);
+      iovs += 4;
+      if (stdinPos >= stdinBuffer.length) {
+        if (inputSignal) {
+          postMessage({ type: "requestInput" });
+          Atomics.store(inputSignal, 0, 0);
+          Atomics.wait(inputSignal, 0, 0);
+          const received = Atomics.load(inputSignal, 1);
+          if (received > 0 && sharedInput) {
+            stdinBuffer = new Uint8Array(sharedInput.subarray(0, received));
+            stdinPos = 0;
+            Atomics.store(inputSignal, 1, 0);
+          } else {
+            break;
+          }
+        } else {
+          postMessage({ type: "stderr", data: "Interactive input not supported in this browser.\n" });
+          interactive = false;
+          break;
+        }
+      }
+      const toCopy = Math.min(len, stdinBuffer.length - stdinPos);
+      mem.write(buf, stdinBuffer.subarray(stdinPos, stdinPos + toCopy));
+      stdinPos += toCopy;
+      size += toCopy;
+      if (toCopy < len) {
+        break;
+      }
+    }
+    mem.write32(nread, size);
+    if (stdinPos >= stdinBuffer.length) {
+      stdinBuffer = new Uint8Array(0);
+      stdinPos = 0;
+    }
+    return ESUCCESS;
+  }
+  return originalHostRead(fd, iovs, iovs_len, nread);
+};
 
 onmessage = async (e) => {
   const { type } = e.data;
   if (type === "run") {
     const { code, input, signal, buffer } = e.data;
     try {
-      eofWarned = false;
       stdinBuffer = new Uint8Array(0);
       stdinPos = 0;
       interactive = input === undefined;
