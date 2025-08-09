@@ -1,8 +1,12 @@
 const base = "/public/third_party/wasm-clang/";
+const TOOLCHAIN_BASE = "/toolchain/";
 
 // Refuse to run if SAB is not available (should be guaranteed by page checks)
 if (!("SharedArrayBuffer" in self)) {
-  postMessage({ type: "stderr", data: "SharedArrayBuffer not available. Is the page cross-origin isolated?" });
+  postMessage({
+    type: "stderr",
+    data: "SharedArrayBuffer not available. Is the page cross-origin isolated?",
+  });
   throw new Error("No SharedArrayBuffer; aborting.");
 }
 
@@ -31,7 +35,7 @@ api = new API({
     }
     return WebAssembly.compile(await response.arrayBuffer());
   },
-  hostWrite: (s) => postMessage({ type: "stdout", data: s })
+  hostWrite: (s) => postMessage({ type: "stdout", data: s }),
 });
 
 const originalHostRead = api.memfs.host_read.bind(api.memfs);
