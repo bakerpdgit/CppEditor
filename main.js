@@ -51,16 +51,14 @@ document.getElementById("tab-console").addEventListener("click", () => setActive
 document.getElementById("tab-input").addEventListener("click", () => setActiveTab("input"));
 
 // Pane size controls
-const editorContainer = document.getElementById("editor");
 const bottomPane = document.getElementById("bottom-pane");
 
-function setPaneSizes(editorPercent, bottomPercent) {
-  editorContainer.style.flex = `0 0 ${editorPercent}%`;
-  bottomPane.style.flex = `0 0 ${bottomPercent}%`;
+function setBottomHeight(percent) {
+  bottomPane.style.height = `${percent}%`;
   if (editor) editor.layout();
 }
 
-document.getElementById("maximize").addEventListener("click", () => setPaneSizes(20, 80));
-document.getElementById("minimize").addEventListener("click", () => setPaneSizes(30, 70));
+document.getElementById("maximize").addEventListener("click", () => setBottomHeight(50));
+document.getElementById("minimize").addEventListener("click", () => setBottomHeight(15));
 
-setPaneSizes(20, 80);
+setBottomHeight(25);
