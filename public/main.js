@@ -2,7 +2,8 @@ window.mdc && mdc.autoInit();
 
 // Hard-require cross-origin isolation for interactive mode
 if (!("SharedArrayBuffer" in self) || !crossOriginIsolated) {
-  const msg = "Interactive mode requires cross-origin isolation (COOP/COEP) on ALL assets.";
+  const msg =
+    "Interactive mode requires cross-origin isolation (COOP/COEP) on ALL assets.";
   console.error(msg);
   if (typeof showBlockingBanner === "function") showBlockingBanner(msg);
   if (typeof disableRunButton === "function") disableRunButton();
@@ -12,12 +13,15 @@ if (!("SharedArrayBuffer" in self) || !crossOriginIsolated) {
 function showBlockingBanner(text) {
   const el = document.createElement("div");
   el.textContent = text;
-  el.style.cssText = "position:fixed;top:0;left:0;right:0;padding:12px;background:#fee;border-bottom:1px solid #f99;z-index:9999;font:14px/1.4 system-ui;";
+  el.style.cssText =
+    "position:fixed;top:0;left:0;right:0;padding:12px;background:#fee;border-bottom:1px solid #f99;z-index:9999;font:14px/1.4 system-ui;";
   document.body.prepend(el);
 }
 
 function disableRunButton() {
-  const btn = document.querySelector('[data-action="run"]') || document.getElementById("run");
+  const btn =
+    document.querySelector('[data-action="run"]') ||
+    document.getElementById("run");
   if (btn) {
     btn.disabled = true;
     btn.title = "Requires COOP/COEP";
@@ -25,14 +29,15 @@ function disableRunButton() {
 }
 
 // Monaco setup
-require.config({ paths: { "vs": "/public/vendor/monaco/vs" } });
+require.config({ paths: { vs: "/vendor/monaco/vs" } });
 let editor;
 require(["vs/editor/editor.main"], function () {
   editor = monaco.editor.create(document.getElementById("editor"), {
-    value: '#include <iostream>\nint main(){\n    std::string name;\n    std::getline(std::cin, name);\n    std::cout << "Hello " << name << "!" << std::endl;\n}\n',
+    value:
+      '#include <iostream>\nint main(){\n    std::string name;\n    std::getline(std::cin, name);\n    std::cout << "Hello " << name << "!" << std::endl;\n}\n',
     language: "cpp",
     theme: "vs-dark",
-    automaticLayout: true
+    automaticLayout: true,
   });
 });
 
@@ -69,7 +74,12 @@ document.getElementById("run").addEventListener("click", () => {
   const code = editor.getValue();
   inputSignal = new Int32Array(new SharedArrayBuffer(8));
   inputBuffer = new Uint8Array(new SharedArrayBuffer(65536));
-  worker.postMessage({ type: "run", code, signal: inputSignal, buffer: inputBuffer.buffer });
+  worker.postMessage({
+    type: "run",
+    code,
+    signal: inputSignal,
+    buffer: inputBuffer.buffer,
+  });
 });
 
 consoleInput.addEventListener("keydown", (e) => {
@@ -97,7 +107,11 @@ function setBottomHeight(percent) {
   if (editor) editor.layout();
 }
 
-document.getElementById("maximize").addEventListener("click", () => setBottomHeight(50));
-document.getElementById("minimize").addEventListener("click", () => setBottomHeight(15));
+document
+  .getElementById("maximize")
+  .addEventListener("click", () => setBottomHeight(50));
+document
+  .getElementById("minimize")
+  .addEventListener("click", () => setBottomHeight(15));
 
 setBottomHeight(25);
