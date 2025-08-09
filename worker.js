@@ -7,14 +7,23 @@ let eofWarned = false;
 let stdinBuffer = new Uint8Array(0);
 let stdinPos = 0;
 let interactive = false;
-const inputSignal = new Int32Array(new SharedArrayBuffer(4));
+let inputSignal = null;
+if (typeof SharedArrayBuffer !== "undefined") {
+  inputSignal = new Int32Array(new SharedArrayBuffer(4));
+}
 
 function hostRead(fd, buffer, offset, length, position) {
   if (interactive && fd === 0) {
     if (stdinPos >= stdinBuffer.length) {
-      postMessage({ type: "requestInput" });
-      Atomics.store(inputSignal, 0, 0);
-      Atomics.wait(inputSignal, 0, 0);
+      if (inputSignal) {
+        postMessage({ type: "requestInput" });
+        Atomics.store(inputSignal, 0, 0);
+        Atomics.wait(inputSignal, 0, 0);
+      } else {
+        postMessage({ type: "stderr", data: "Interactive input not supported in this browser.\n" });
+        interactive = false;
+        return 0;
+      }
     }
     const toCopy = Math.min(length, stdinBuffer.length - stdinPos);
     buffer.set(stdinBuffer.subarray(stdinPos, stdinPos + toCopy), offset);
@@ -76,7 +85,9 @@ onmessage = async (e) => {
   } else if (type === "input") {
     stdinBuffer = new TextEncoder().encode(e.data.data);
     stdinPos = 0;
-    Atomics.store(inputSignal, 0, 1);
-    Atomics.notify(inputSignal, 0);
+    if (inputSignal) {
+      Atomics.store(inputSignal, 0, 1);
+      Atomics.notify(inputSignal, 0);
+    }
   }
 };

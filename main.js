@@ -22,8 +22,14 @@ const inputPanel = document.getElementById("input-panel");
 const fixedToggle = document.getElementById("fixed-toggle");
 const moreBtn = document.getElementById("more");
 const moreMenu = document.getElementById("more-menu");
-let useFixed = false;
+let useFixed = typeof SharedArrayBuffer === "undefined";
 let awaiting = false;
+
+if (useFixed) {
+  fixedToggle.checked = true;
+  tabInput.style.display = "inline-block";
+  inputPanel.style.display = "block";
+}
 
 worker.onmessage = (e) => {
   const { type, data } = e.data;

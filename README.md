@@ -9,8 +9,9 @@ The compiled module executes in a Web Worker and its output is shown in a consol
 
 - Material Design layout with Monaco editor
 - Split view with resizable output panel
-- Console accepts interactive input by default. A menu next to the Run button
-  allows toggling a fixed input pane whose contents are piped to `stdin`.
+- Console accepts interactive input by default when the browser supports
+  `SharedArrayBuffer`. A menu next to the Run button allows toggling a fixed
+  input pane whose contents are piped to `stdin`.
 - Compilation and execution happen in a Web Worker so the UI stays responsive.
 
 ## Running
@@ -20,10 +21,11 @@ served over HTTP(s). The worker downloads the compiler toolchain from
 `https://binji.github.io/wasm-clang/`.
 
 To deploy on GitHub Pages or similar static hosts simply publish the repository
-contents. If the hosting platform allows custom headers you can serve the page
-with `Cross-Origin-Opener-Policy: same-origin` and
-`Cross-Origin-Embedder-Policy: require-corp` to enable `SharedArrayBuffer` in the
-future, but the current toolchain does **not** require these headers.
+contents. For interactive console input the page must be served with
+`Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp` headers (or equivalent
+`<meta http-equiv>` tags) so that `SharedArrayBuffer` is available. Without these
+headers the editor falls back to the fixed input pane.
 
 ## Acknowledgements
 
