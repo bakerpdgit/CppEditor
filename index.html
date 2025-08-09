@@ -4,11 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Browser C++ Editor</title>
+  <!-- Make page portable; CF Pages will still use _headers -->
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
   <!-- Material Design Components -->
-  <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
-  <script defer src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <link rel="stylesheet" href="/public/vendor/mdc/mdc.min.css">
+  <script defer src="/public/vendor/mdc/mdc.min.js"></script>
   <!-- Monaco -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <script src="/public/vendor/monaco/vs/loader.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="mdc-typography">
@@ -17,16 +20,10 @@
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
         <span class="mdc-top-app-bar__title">C++ Web Editor</span>
       </section>
-      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar" style="position: relative;">
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
         <button id="run" class="mdc-button mdc-button--raised">
           <span class="mdc-button__label">Run</span>
         </button>
-        <button id="more" class="mdc-button">
-          <span class="mdc-button__label">...</span>
-        </button>
-        <div id="more-menu" class="menu">
-          <label><input type="checkbox" id="fixed-toggle" /> Use fixed inputs</label>
-        </div>
       </section>
     </div>
   </header>
@@ -40,13 +37,11 @@
       </div>
       <div class="tabs">
         <button id="tab-console" class="tab active">Console</button>
-        <button id="tab-input" class="tab" style="display: none;">Input</button>
       </div>
       <div id="console-panel" class="panel active">
         <pre id="output"></pre>
         <textarea id="console-input" class="console-input" spellcheck="false"></textarea>
       </div>
-      <div id="input-panel" class="panel" style="display: none;"><textarea id="stdin" placeholder="Program input..."></textarea></div>
     </div>
   </div>
 

@@ -9,29 +9,32 @@ The compiled module executes in a Web Worker and its output is shown in a consol
 
 - Material Design layout with Monaco editor
 - Split view with resizable output panel
-- Console accepts interactive input by default when the browser supports
-  `SharedArrayBuffer`. A menu next to the Run button allows toggling a fixed
-  input pane whose contents are piped to `stdin`.
-- Compilation and execution happen in a Web Worker so the UI stays responsive.
+- Console accepts interactive input using `SharedArrayBuffer`
+- Compilation and execution happen in a Web Worker so the UI stays responsive
 
 ## Running
 
-Open `index.html` in a browser. No server is required, but all assets must be
-served over HTTP(s). The worker bundles a local copy of `shared.js` and downloads
-the remainder of the compiler toolchain from
-`https://binji.github.io/wasm-clang/`.
+Open `index.html` in a browser. All assets must be served from the same origin
+with cross-origin isolation headers so `SharedArrayBuffer` is available.
 
-To deploy on GitHub Pages or similar static hosts simply publish the repository
-contents. For interactive console input the page must be served with
-`Cross-Origin-Opener-Policy: same-origin` and
-`Cross-Origin-Embedder-Policy: require-corp` headers (or equivalent
-`<meta http-equiv>` tags) so that `SharedArrayBuffer` is available. Without these
-headers the editor falls back to the fixed input pane. Cloudflare Pages supports
-these policies via a `_headers` file at the project root, which is included in
-this repository for convenience.
+Download the following third-party assets and place them in the paths below:
+
+```
+public/vendor/mdc/mdc.min.css       # https://unpkg.com/material-components-web/dist/material-components-web.min.css
+public/vendor/mdc/mdc.min.js        # https://unpkg.com/material-components-web/dist/material-components-web.min.js
+public/vendor/monaco/vs/*           # https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/*
+```
+
+Mirror the contents of `https://binji.github.io/wasm-clang/` into
+`public/third_party/wasm-clang/` so the worker can fetch the toolchain locally.
+
+To deploy on Cloudflare Pages or similar static hosts, ensure every response
+includes `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp`. A `_headers` file is provided for
+Cloudflare Pages.
 
 ## Acknowledgements
 
 The WebAssembly-based compiler is provided by the
 [wasm-clang project](https://github.com/binji/wasm-clang) and is licensed under
-Apache 2.0.
+Apache 2.0.
