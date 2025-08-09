@@ -21,6 +21,7 @@ worker.onmessage = (e) => {
   if (type === "stdout" || type === "stderr") {
     const clean = data.replace(/\x1b\[1;93m>\x1b\[0m/g, "> ");
     output.textContent += clean;
+    output.parentElement.scrollTop = output.parentElement.scrollHeight;
   }
 };
 
@@ -54,7 +55,7 @@ document.getElementById("tab-input").addEventListener("click", () => setActiveTa
 const bottomPane = document.getElementById("bottom-pane");
 
 function setBottomHeight(percent) {
-  bottomPane.style.height = `${percent}%`;
+  bottomPane.style.flexBasis = `${percent}%`;
   if (editor) editor.layout();
 }
 
