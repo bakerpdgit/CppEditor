@@ -104,10 +104,14 @@ function sendInput(s) {
 }
 
 function feedFixedInput() {
-  const line = fixedIndex < fixedLines.length ? fixedLines[fixedIndex++] : "";
-  const s = line + "\n";
-  appendToConsole(s);
-  sendInput(s);
+  if (fixedIndex < fixedLines.length) {
+    const line = fixedLines[fixedIndex++];
+    const s = line + "\n";
+    appendToConsole(s);
+    sendInput(s);
+  } else {
+    showPrompt();
+  }
 }
 
 function activateTab(which) {
@@ -173,7 +177,13 @@ runBtn.addEventListener("click", () => {
   inputSignal = new Int32Array(new SharedArrayBuffer(8));
   sharedBuf = new Uint8Array(sab);
   if (useFixedInputs) {
-    fixedLines = inputsArea.value.split(/\n/);
+    fixedLines = inputsArea.value.replace(/\r/g, "").split("\n");
+    if (
+      fixedLines.length &&
+      fixedLines[fixedLines.length - 1] === ""
+    ) {
+      fixedLines.pop();
+    }
     fixedIndex = 0;
   }
   setRunning(true);
