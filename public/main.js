@@ -33,8 +33,13 @@ require.config({ paths: { vs: "/vendor/monaco/vs" } });
 let editor;
 require(["vs/editor/editor.main"], function () {
   editor = monaco.editor.create(document.getElementById("editor"), {
-    value:
-      '#include <iostream>\nint main(){\n    std::string name;\n    std::getline(std::cin, name);\n    std::cout << "Hello " << name << "!" << std::endl;\n}\n',
+    value: ```#include <iostream>
+      int main(){
+          std::string name;
+          std::cout << "Enter your name:" << std::endl;
+          std::getline(std::cin, name);
+          std::cout << "Hello " << name << "!" << std::endl;
+      }\n'```,
     language: "cpp",
     theme: "vs-dark",
     automaticLayout: true,
@@ -179,10 +184,7 @@ runBtn.addEventListener("click", () => {
   sharedBuf = new Uint8Array(sab);
   if (useFixedInputs) {
     fixedLines = inputsArea.value.replace(/\r/g, "").split("\n");
-    if (
-      fixedLines.length &&
-      fixedLines[fixedLines.length - 1] === ""
-    ) {
+    if (fixedLines.length && fixedLines[fixedLines.length - 1] === "") {
       fixedLines.pop();
     }
     fixedIndex = 0;
