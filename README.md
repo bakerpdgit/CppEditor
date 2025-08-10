@@ -9,23 +9,32 @@ The compiled module executes in a Web Worker and its output is shown in a consol
 
 - Material Design layout with Monaco editor
 - Split view with resizable output panel
-- Console and input tabs. Text typed in the input tab is provided on `stdin`.
-- Compilation and execution happen in a Web Worker so the UI stays responsive.
+- Console accepts interactive input using `SharedArrayBuffer`
+- Compilation and execution happen in a Web Worker so the UI stays responsive
 
 ## Running
 
-Open `index.html` in a browser. No server is required, but all assets must be
-served over HTTP(s). The worker downloads the compiler toolchain from
-`https://binji.github.io/wasm-clang/`.
+Open `index.html` in a browser. All assets must be served from the same origin
+with cross-origin isolation headers so `SharedArrayBuffer` is available.
 
-To deploy on GitHub Pages or similar static hosts simply publish the repository
-contents. If the hosting platform allows custom headers you can serve the page
-with `Cross-Origin-Opener-Policy: same-origin` and
-`Cross-Origin-Embedder-Policy: require-corp` to enable `SharedArrayBuffer` in the
-future, but the current toolchain does **not** require these headers.
+Download the following third-party assets and place them in the paths below:
+
+```
+public/vendor/mdc/mdc.min.css       # https://unpkg.com/material-components-web/dist/material-components-web.min.css
+public/vendor/mdc/mdc.min.js        # https://unpkg.com/material-components-web/dist/material-components-web.min.js
+public/vendor/monaco/vs/*           # https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/*
+```
+
+Mirror the contents of `https://binji.github.io/wasm-clang/` into
+`public/third_party/wasm-clang/` so the worker can fetch the toolchain locally.
+
+To deploy on Cloudflare Pages or similar static hosts, ensure every response
+includes `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp`. A `_headers` file is provided for
+Cloudflare Pages.
 
 ## Acknowledgements
 
 The WebAssembly-based compiler is provided by the
 [wasm-clang project](https://github.com/binji/wasm-clang) and is licensed under
-Apache 2.0.
+Apache 2.0.

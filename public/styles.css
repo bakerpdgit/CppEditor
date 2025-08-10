@@ -1,0 +1,96 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.main-content {
+  position: absolute;
+  top: 64px; /* height of app bar */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mdc-top-app-bar {
+  z-index: 2000;
+}
+
+.editor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.bottom-pane {
+  flex: 0 0 25%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.console-controls {
+  display: flex;
+  justify-content: flex-end;
+  background: #f5f5f5;
+}
+
+.control-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.tabs {
+  display: flex;
+  background: #f5f5f5;
+}
+
+.tab {
+  flex: 1;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #e0e0e0;
+}
+
+.panel {
+  flex: 1;
+  display: none;
+  overflow: auto;
+  background: #121212;
+  color: #ffffff;
+  min-height: 0;
+}
+
+.panel.active {
+  display: block;
+}
+
+#output {
+  padding: 8px;
+  white-space: pre-wrap;
+}
+
+#console-panel {
+  position: relative;
+}
+
+.console-input {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  color: inherit;
+  border: none;
+  outline: none;
+  font-family: monospace;
+  padding: 8px;
+}
