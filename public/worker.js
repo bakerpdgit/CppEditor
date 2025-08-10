@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 const TOOLCHAIN_BASE = "/toolchain/"; // for clang/lld
 const ASSETS_BASE = "/third_party/wasm-clang/"; // for small local files
 

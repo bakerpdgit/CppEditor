@@ -1,0 +1,3 @@
+Monaco Editor — MIT License
+Full text: /third-party/LICENSES/MIT.txt
+Source: https://github.com/microsoft/monaco-editor

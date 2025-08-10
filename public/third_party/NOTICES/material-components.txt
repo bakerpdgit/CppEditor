@@ -1,0 +1,6 @@
+Material Components for the Web (MDC)
+
+Project: https://github.com/material-components/material-components-web
+License: Apache-2.0 (see ../LICENSES/Apache-2.0.txt)
+Copyright: © Google LLC
+Artifacts: CSS/JS mirrored under /public/vendor/mdc/

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 window.mdc && mdc.autoInit();
 
 // Hard-require cross-origin isolation for interactive mode

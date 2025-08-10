@@ -1,0 +1,6 @@
+This project bundles or fetches third-party components:
+
+• LLVM Clang and LLD — © The LLVM Project — Apache-2.0 WITH LLVM-exception
+https://llvm.org/
+• wasm-clang demo code (FS glue) — © Ben Smith & contributors — Apache-2.0
+https://github.com/binji/wasm-clang

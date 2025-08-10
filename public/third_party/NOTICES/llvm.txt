@@ -1,0 +1,8 @@
+LLVM (Clang and LLD)
+
+Project: The LLVM Project (https://llvm.org/)
+Components: clang, lld (WebAssembly builds)
+License: Apache-2.0 WITH LLVM-exception
+Copyright: © The LLVM Project
+Source: https://github.com/llvm/llvm-project
+Notes: Binaries are mirrored as GitHub Release assets in this repository for reliability.

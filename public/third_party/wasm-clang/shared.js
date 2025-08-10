@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/*
+ * THIS PROJECT MAKES ALTERATIONS TO the host_read function to support blocking inputs via a SharedArrayBuffer
+ */
+
+// SPDX-License-Identifier: Apache-2.0
+// Derived from https://github.com/binji/wasm-clang
+
 function sleep(ms) {
   return new Promise((resolve, _) => setTimeout(resolve, ms));
 }

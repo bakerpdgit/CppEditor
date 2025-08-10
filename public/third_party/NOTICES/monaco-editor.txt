@@ -1,0 +1,7 @@
+Monaco Editor
+
+Project: Monaco Editor (https://github.com/microsoft/monaco-editor)
+License: MIT (see ../LICENSES/MIT.txt)
+Copyright: © Microsoft
+Version: 0.45.0 (minified ‘vs’ folder mirrored under /public/vendor/monaco/)
+
