@@ -170,6 +170,7 @@ function startWorker() {
 
 runBtn.addEventListener("click", () => {
   if (running) return;
+  activateTab("console");
   startWorker();
   output.textContent = "";
   const code = editor.getValue();
@@ -250,6 +251,10 @@ optionsOk.addEventListener("click", () => {
   optionsModal.classList.remove("active");
   useFixedInputs = useFixedInputsChk.checked;
   updateInputsVisibility();
+  if (useFixedInputs) {
+    activateTab("inputs");
+    inputsArea.focus();
+  }
 });
 
 tabConsole.addEventListener("click", () => activateTab("console"));
