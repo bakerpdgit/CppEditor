@@ -19,14 +19,28 @@ let stdinPos = 0;
 let inputSignal = null;
 let sharedInput = null;
 
+const TOOLCHAIN_NAMES = new Set([
+  "clang",
+  "lld",
+  "wasm-ld",
+  "clang.wasm",
+  "lld.wasm",
+  "wasm-ld.wasm",
+]);
+function baseFor(path) {
+  // handle 'clang', '/something/clang', 'clang?x=y'
+  const name = String(path).split("?")[0].split("/").pop();
+  return TOOLCHAIN_NAMES.has(name) ? TOOLCHAIN_BASE : ASSETS_BASE;
+}
+
 api = new API({
   readBuffer: async (path) => {
-    const basePath = path.endsWith(".wasm") ? TOOLCHAIN_BASE : ASSETS_BASE;
+    const basePath = baseFor(path);
     const response = await fetch(basePath + path);
     return response.arrayBuffer();
   },
   compileStreaming: async (path) => {
-    const basePath = path.endsWith(".wasm") ? TOOLCHAIN_BASE : ASSETS_BASE;
+    const basePath = baseFor(path);
     const url = basePath + path;
     const response = await fetch(url);
 
