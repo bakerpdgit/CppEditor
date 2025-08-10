@@ -85,10 +85,23 @@
 
     <div id="options-modal" class="modal">
       <div class="modal-content">
-        <label>
+        <h2 class="modal-header">Options</h2>
+        <label class="modal-option">
           <input type="checkbox" id="use-fixed-inputs" />
           Use fixed inputs
         </label>
+        <h2 class="modal-header modal-header--credits">Credits</h2>
+        <p class="credits-text">
+          This editor is for educational purposes and uses the LLVM toolchain:
+          Clang and LLD (Apache-2.0 WITH LLVM-exception). Wasm build approach
+          and FS glue adapted from
+          <a href="https://github.com/binji/wasm-clang">binji/wasm-clang</a>
+          (Apache-2.0). Source:
+          <a href="https://github.com/bakerpdgit/CppEditor">GitHub</a> •
+          Upstream:
+          <a href="https://github.com/binji/wasm-clang">wasm-clang</a> •
+          <a href="https://llvm.org/">LLVM</a>
+        </p>
         <div class="modal-actions">
           <button id="options-ok">OK</button>
         </div>
