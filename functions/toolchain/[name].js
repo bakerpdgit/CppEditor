@@ -29,7 +29,7 @@ export async function onRequest({ request, params }) {
   }
 
   const r = await fetch(upstream, {
-    cf: { cacheEverything: true, cacheTtl: 31536000 },
+    cf: { cacheTtlByStatus: { "200-299": 31536000, 404: 0, "500-599": 0 } },
   });
   if (!r.ok) return new Response(`Upstream ${r.status}`, { status: 502 });
 

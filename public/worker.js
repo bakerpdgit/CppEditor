@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+const VERSION = "v2025-08-10a"; // bump when you need to reset caching
 const TOOLCHAIN_BASE = "/toolchain/"; // for clang/lld
 const ASSETS_BASE = "/third_party/wasm-clang/"; // for small local files
 
@@ -38,12 +39,12 @@ function baseFor(path) {
 api = new API({
   readBuffer: async (path) => {
     const basePath = baseFor(path);
-    const response = await fetch(basePath + path);
+    const response = await fetch(basePath + path + "?v=" + VERSION);
     return response.arrayBuffer();
   },
   compileStreaming: async (path) => {
     const basePath = baseFor(path);
-    const url = basePath + path;
+    const url = basePath + path + "?v=" + VERSION;
     const response = await fetch(url);
 
     if (
