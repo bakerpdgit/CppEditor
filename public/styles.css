@@ -72,6 +72,10 @@ html, body {
   display: block;
 }
 
+#inputs-panel {
+  overflow: hidden;
+}
+
 #output {
   padding: 8px;
   white-space: pre-wrap;
@@ -139,4 +143,6 @@ html, body {
   resize: none;
   padding: 8px;
   font: 14px/1.4 monospace;
+  box-sizing: border-box;
+  overflow: auto;
 }
