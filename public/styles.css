@@ -72,6 +72,10 @@ html, body {
   display: block;
 }
 
+#inputs-panel {
+  overflow: hidden;
+}
+
 #output {
   padding: 8px;
   white-space: pre-wrap;
@@ -100,4 +104,45 @@ html, body {
   font: inherit;
   padding: 0;
   margin: 0;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 4px;
+  color: #000000;
+}
+
+.modal-actions {
+  margin-top: 12px;
+  text-align: right;
+}
+
+.inputs-area {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  resize: none;
+  padding: 8px;
+  font: 14px/1.4 monospace;
+  box-sizing: border-box;
+  overflow: auto;
 }

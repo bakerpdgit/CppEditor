@@ -29,6 +29,9 @@
           <button id="runBtn" class="mdc-button mdc-button--raised">
             <span class="mdc-button__label">Run</span>
           </button>
+          <button id="optionsBtn" class="mdc-button mdc-button--raised">
+            <span class="mdc-button__label">...</span>
+          </button>
           <button id="stopBtn" class="mdc-button mdc-button--raised" disabled>
             <span class="mdc-button__label">Stop</span>
           </button>
@@ -60,6 +63,7 @@
         </div>
         <div class="tabs">
           <button id="tab-console" class="tab active">Console</button>
+          <button id="tab-inputs" class="tab" style="display: none">Inputs</button>
         </div>
         <div id="console-panel" class="panel active">
           <pre id="output"></pre>
@@ -72,6 +76,25 @@
               autocomplete="off"
             />
           </div>
+        </div>
+        <div id="inputs-panel" class="panel">
+          <textarea
+            id="inputs-area"
+            class="inputs-area"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div id="options-modal" class="modal">
+      <div class="modal-content">
+        <label>
+          <input type="checkbox" id="use-fixed-inputs" />
+          Use fixed inputs
+        </label>
+        <div class="modal-actions">
+          <button id="options-ok">OK</button>
         </div>
       </div>
     </div>

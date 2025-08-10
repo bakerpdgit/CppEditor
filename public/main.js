@@ -50,10 +50,22 @@ const stopBtn = document.getElementById("stopBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const fileInput = document.getElementById("fileInput");
+const optionsBtn = document.getElementById("optionsBtn");
+const optionsModal = document.getElementById("options-modal");
+const useFixedInputsChk = document.getElementById("use-fixed-inputs");
+const optionsOk = document.getElementById("options-ok");
+const tabConsole = document.getElementById("tab-console");
+const tabInputs = document.getElementById("tab-inputs");
+const consolePanel = document.getElementById("console-panel");
+const inputsPanel = document.getElementById("inputs-panel");
+const inputsArea = document.getElementById("inputs-area");
 let worker = null;
 let running = false;
 let inputSignal;
 let sharedBuf;
+let useFixedInputs = false;
+let fixedLines = [];
+let fixedIndex = 0;
 
 function stripAnsi(text) {
   return text.replace(/\x1b\[[0-?]*[ -\/]*[@-~]/g, "");
@@ -82,6 +94,51 @@ function hidePrompt() {
   stdinEl.blur();
 }
 
+function sendInput(s) {
+  const bytes = new TextEncoder().encode(s);
+  sharedBuf.fill(0);
+  sharedBuf.set(bytes.subarray(0, sharedBuf.length));
+  Atomics.store(inputSignal, 1, Math.min(bytes.length, sharedBuf.length));
+  Atomics.store(inputSignal, 0, 1);
+  Atomics.notify(inputSignal, 0, 1);
+}
+
+function feedFixedInput() {
+  if (fixedIndex < fixedLines.length) {
+    const line = fixedLines[fixedIndex++];
+    const s = line + "\n";
+    appendToConsole(s);
+    sendInput(s);
+  } else {
+    showPrompt();
+  }
+}
+
+function activateTab(which) {
+  tabConsole.classList.remove("active");
+  tabInputs.classList.remove("active");
+  consolePanel.classList.remove("active");
+  inputsPanel.classList.remove("active");
+  if (which === "inputs") {
+    tabInputs.classList.add("active");
+    inputsPanel.classList.add("active");
+  } else {
+    tabConsole.classList.add("active");
+    consolePanel.classList.add("active");
+  }
+}
+
+function updateInputsVisibility() {
+  if (useFixedInputs) {
+    tabInputs.style.display = "block";
+    inputsPanel.style.display = "";
+  } else {
+    tabInputs.style.display = "none";
+    inputsPanel.style.display = "none";
+    activateTab("console");
+  }
+}
+
 function setRunning(on) {
   running = on;
   runBtn.disabled = on;
@@ -96,7 +153,11 @@ function startWorker() {
     const m = e.data;
     if (m.type === "requestInput") {
       appendToConsole("> ", true);
-      showPrompt();
+      if (useFixedInputs) {
+        feedFixedInput();
+      } else {
+        showPrompt();
+      }
     } else if (m.type === "stdout") {
       appendToConsole(m.data);
     } else if (m.type === "stderr") {
@@ -109,12 +170,23 @@ function startWorker() {
 
 runBtn.addEventListener("click", () => {
   if (running) return;
+  activateTab("console");
   startWorker();
   output.textContent = "";
   const code = editor.getValue();
   const sab = new SharedArrayBuffer(4096);
   inputSignal = new Int32Array(new SharedArrayBuffer(8));
   sharedBuf = new Uint8Array(sab);
+  if (useFixedInputs) {
+    fixedLines = inputsArea.value.replace(/\r/g, "").split("\n");
+    if (
+      fixedLines.length &&
+      fixedLines[fixedLines.length - 1] === ""
+    ) {
+      fixedLines.pop();
+    }
+    fixedIndex = 0;
+  }
   setRunning(true);
   worker.postMessage({
     type: "run",
@@ -167,12 +239,26 @@ stdinEl.addEventListener("keydown", (e) => {
     const s = stdinEl.value + "\n";
     appendToConsole(s);
     hidePrompt();
-    const bytes = new TextEncoder().encode(s);
-    sharedBuf.set(bytes.subarray(0, sharedBuf.length));
-    Atomics.store(inputSignal, 1, Math.min(bytes.length, sharedBuf.length));
-    Atomics.notify(inputSignal, 0, 1);
+    sendInput(s);
   }
 });
+
+optionsBtn.addEventListener("click", () => {
+  optionsModal.classList.add("active");
+});
+
+optionsOk.addEventListener("click", () => {
+  optionsModal.classList.remove("active");
+  useFixedInputs = useFixedInputsChk.checked;
+  updateInputsVisibility();
+  if (useFixedInputs) {
+    activateTab("inputs");
+    inputsArea.focus();
+  }
+});
+
+tabConsole.addEventListener("click", () => activateTab("console"));
+tabInputs.addEventListener("click", () => activateTab("inputs"));
 
 // Pane size controls
 const bottomPane = document.getElementById("bottom-pane");
@@ -190,3 +276,4 @@ document
   .addEventListener("click", () => setBottomHeight(15));
 
 setBottomHeight(25);
+updateInputsVisibility();
