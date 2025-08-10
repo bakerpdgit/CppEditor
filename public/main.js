@@ -55,8 +55,12 @@ let running = false;
 let inputSignal;
 let sharedBuf;
 
-function appendToConsole(text) {
-  const clean = text.replace(/\x1b\[1;93m>\x1b\[0m/g, "> ");
+function stripAnsi(text) {
+  return text.replace(/\x1b\[[0-?]*[ -\/]*[@-~]/g, "");
+}
+
+function appendToConsole(text, raw = false) {
+  const clean = raw ? text : stripAnsi(text).replace(/^>\s*$/gm, "");
   output.textContent += clean;
   output.parentElement.scrollTop = output.parentElement.scrollHeight;
 }
@@ -91,7 +95,7 @@ function startWorker() {
   worker.onmessage = (e) => {
     const m = e.data;
     if (m.type === "requestInput") {
-      appendToConsole("> ");
+      appendToConsole("> ", true);
       showPrompt();
     } else if (m.type === "stdout") {
       appendToConsole(m.data);
