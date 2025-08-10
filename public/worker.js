@@ -21,12 +21,15 @@ let sharedInput = null;
 
 api = new API({
   readBuffer: async (path) => {
-    const response = await fetch(base + path);
+    const basePath = path.endsWith(".wasm") ? TOOLCHAIN_BASE : ASSETS_BASE;
+    const response = await fetch(basePath + path);
     return response.arrayBuffer();
   },
   compileStreaming: async (path) => {
-    const url = base + path;
+    const basePath = path.endsWith(".wasm") ? TOOLCHAIN_BASE : ASSETS_BASE;
+    const url = basePath + path;
     const response = await fetch(url);
+
     if (
       WebAssembly.compileStreaming &&
       response.headers.get("Content-Type") === "application/wasm"
