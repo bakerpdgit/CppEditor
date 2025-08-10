@@ -33,13 +33,7 @@ require.config({ paths: { vs: "/vendor/monaco/vs" } });
 let editor;
 require(["vs/editor/editor.main"], function () {
   editor = monaco.editor.create(document.getElementById("editor"), {
-    value: ```#include <iostream>
-      int main(){
-          std::string name;
-          std::cout << "Enter your name:" << std::endl;
-          std::getline(std::cin, name);
-          std::cout << "Hello " << name << "!" << std::endl;
-      }\n'```,
+    value: ```Hello```,
     language: "cpp",
     theme: "vs-dark",
     automaticLayout: true,
