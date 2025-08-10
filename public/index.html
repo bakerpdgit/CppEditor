@@ -26,8 +26,11 @@
           class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end"
           role="toolbar"
         >
-          <button id="run" class="mdc-button mdc-button--raised">
+          <button id="runBtn" class="mdc-button mdc-button--raised">
             <span class="mdc-button__label">Run</span>
+          </button>
+          <button id="stopBtn" class="mdc-button mdc-button--raised" disabled>
+            <span class="mdc-button__label">Stop</span>
           </button>
         </section>
       </div>
@@ -45,11 +48,15 @@
         </div>
         <div id="console-panel" class="panel active">
           <pre id="output"></pre>
-          <textarea
-            id="console-input"
-            class="console-input"
-            spellcheck="false"
-          ></textarea>
+          <div id="stdin-row" class="stdin-row" hidden>
+            <span class="prompt">&gt;</span>
+            <input
+              id="stdin"
+              class="stdin-input"
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
         </div>
       </div>
     </div>
