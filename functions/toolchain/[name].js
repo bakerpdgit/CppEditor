@@ -1,69 +1,64 @@
 // functions/toolchain/[name].js
-const ORIGIN = "https://binji.github.io/wasm-clang";
+const SOURCES = {
+  clang: "https://github.com/binji/wasm-clang/raw/refs/heads/master/clang",
+  lld: "https://github.com/binji/wasm-clang/raw/refs/heads/master/lld",
+  "wasm-ld": "https://github.com/binji/wasm-clang/raw/refs/heads/master/lld", // alias
+  "sysroot.tar": "/third_party/wasm-clang/sysroot.tar", // small; you host this in public/
+  "shared.js": "/third_party/wasm-clang/shared.js", // small; you host this in public/
+};
 
 const CT = {
   wasm: "application/wasm",
   tar: "application/x-tar",
+  js: "application/javascript",
   bin: "application/octet-stream",
 };
 
-export async function onRequest({ request, params, env }) {
-  const url = new URL(request.url);
-  let name = params.name; // path segment after /toolchain/
+export async function onRequest({ request, params }) {
+  let name = params.name;
   if (!name) return new Response("Missing name", { status: 400 });
 
-  // Map alias: some toolchains call the linker "wasm-ld"; upstream uses "lld"
-  if (name === "wasm-ld") name = "lld";
+  // normalise aliases
+  if (name === "wasm-lld") name = "wasm-ld";
 
-  // Only allow the files we expect
-  const allow = new Set(["clang", "lld", "sysroot.tar"]);
-  if (!allow.has(name)) return new Response("Not found", { status: 404 });
+  const src = SOURCES[name];
+  if (!src) return new Response("Not found", { status: 404 });
 
-  const upstream = `${ORIGIN}/${name}`;
-  const method = request.method.toUpperCase();
-
-  // Support HEAD probes from your code
-  if (method === "HEAD") {
-    const headResp = await fetch(upstream, { method: "HEAD" });
-    return new Response(null, {
-      status: headResp.status,
-      headers: makeHeaders(name),
+  // HEAD support
+  if (request.method === "HEAD") {
+    const r = await fetch(resolve(src), {
+      method: "HEAD",
+      cf: { cacheEverything: true, cacheTtl: 31536000 },
     });
+    return new Response(null, { status: r.status, headers: headersFor(name) });
   }
 
-  // Stream the body; let Cloudflare edge cache it
-  const resp = await fetch(upstream, {
-    method: "GET",
-    // Optional: stronger caching at the edge
-    cf: { cacheTtl: 31536000, cacheEverything: true },
+  const r = await fetch(resolve(src), {
+    cf: { cacheEverything: true, cacheTtl: 31536000 },
   });
+  if (!r.ok) return new Response(`Upstream ${r.status}`, { status: 502 });
 
-  if (!resp.ok) {
-    return new Response(`Upstream ${resp.status}`, { status: 502 });
-  }
-
-  // Clone as a streamed body; set explicit headers for WASM streaming compile
-  return new Response(resp.body, {
-    status: 200,
-    headers: makeHeaders(name),
-  });
+  return new Response(r.body, { status: 200, headers: headersFor(name) });
 }
 
-function makeHeaders(name) {
+function resolve(u) {
+  // Allow path-relative for your own small assets
+  if (u.startsWith("/")) return u;
+  return u;
+}
+
+function headersFor(name) {
   const h = new Headers();
-  // Content-Type for streaming compile
-  if (name === "clang" || name === "lld") h.set("Content-Type", CT.wasm);
+  if (name.endsWith(".js")) h.set("Content-Type", CT.js);
   else if (name.endsWith(".tar")) h.set("Content-Type", CT.tar);
+  else if (name === "clang" || name === "lld" || name === "wasm-ld")
+    h.set("Content-Type", CT.wasm);
   else h.set("Content-Type", CT.bin);
 
-  // Keep isolation happy; same-origin responses don’t strictly need CORP,
-  // but adding it is harmless and explicit.
+  h.set("Cross-Origin-Opener-Policy", "same-origin");
+  h.set("Cross-Origin-Embedder-Policy", "require-corp");
   h.set("Cross-Origin-Resource-Policy", "same-origin");
-
-  // Long cache; files are versioned upstream rarely
   h.set("Cache-Control", "public, max-age=31536000, immutable");
-
-  // Let streaming compile work efficiently
   h.set("Accept-Ranges", "bytes");
   return h;
 }
