@@ -79,18 +79,25 @@ html, body {
 
 #console-panel {
   position: relative;
+  font: 14px/1.4 monospace;
 }
 
-.console-input {
-  display: none;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  box-sizing: border-box;
-  background: transparent;
-  color: inherit;
+.stdin-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 8px 8px;
+  font: inherit;
+}
+
+.stdin-input {
+  flex: 1 1 auto;
   border: none;
   outline: none;
-  font-family: monospace;
-  padding: 8px;
+  background: transparent;
+  color: inherit;
+  caret-color: currentColor;
+  font: inherit;
+  padding: 0;
+  margin: 0;
 }

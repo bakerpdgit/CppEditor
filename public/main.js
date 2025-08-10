@@ -21,7 +21,7 @@ function showBlockingBanner(text) {
 function disableRunButton() {
   const btn =
     document.querySelector('[data-action="run"]') ||
-    document.getElementById("run");
+    document.getElementById("runBtn");
   if (btn) {
     btn.disabled = true;
     btn.title = "Requires COOP/COEP";
@@ -41,61 +41,136 @@ require(["vs/editor/editor.main"], function () {
   });
 });
 
-// Worker setup
-const worker = new Worker("worker.js");
+// Worker and console setup
 const output = document.getElementById("output");
-const consoleInput = document.getElementById("console-input");
-let awaiting = false;
+const stdinRow = document.getElementById("stdin-row");
+const stdinEl = document.getElementById("stdin");
+const runBtn = document.getElementById("runBtn");
+const stopBtn = document.getElementById("stopBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const fileInput = document.getElementById("fileInput");
+let worker = null;
+let running = false;
 let inputSignal;
-let inputBuffer;
+let sharedBuf;
 
-worker.onmessage = (e) => {
-  const { type, data } = e.data;
-  if (type === "stdout" || type === "stderr") {
-    const clean = data.replace(/\x1b\[1;93m>\x1b\[0m/g, "> ");
-    output.textContent += clean;
-    output.parentElement.scrollTop = output.parentElement.scrollHeight;
-  } else if (type === "requestInput") {
-    awaiting = true;
-    output.textContent += "> ";
-    output.parentElement.scrollTop = output.parentElement.scrollHeight;
-    consoleInput.value = "";
-    consoleInput.style.display = "block";
-    consoleInput.focus();
-  } else if (type === "done") {
-    awaiting = false;
-    consoleInput.style.display = "none";
-  }
-};
+function stripAnsi(text) {
+  return text.replace(/\x1b\[[0-?]*[ -\/]*[@-~]/g, "");
+}
 
-document.getElementById("run").addEventListener("click", () => {
+function appendToConsole(text, raw = false) {
+  const clean = raw ? text : stripAnsi(text).replace(/^>\s*$/gm, "");
+  output.textContent += clean;
+  output.parentElement.scrollTop = output.parentElement.scrollHeight;
+}
+
+function appendErr(text) {
+  appendToConsole(text);
+}
+
+function showPrompt() {
+  stdinEl.value = "";
+  stdinRow.hidden = false;
+  stdinEl.focus();
+  stdinRow.scrollIntoView({ block: "end" });
+}
+
+function hidePrompt() {
+  stdinRow.hidden = true;
+  stdinEl.value = "";
+  stdinEl.blur();
+}
+
+function setRunning(on) {
+  running = on;
+  runBtn.disabled = on;
+  stopBtn.disabled = !on;
+  if (!on) hidePrompt();
+}
+
+function startWorker() {
+  if (worker) worker.terminate();
+  worker = new Worker("worker.js");
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === "requestInput") {
+      appendToConsole("> ", true);
+      showPrompt();
+    } else if (m.type === "stdout") {
+      appendToConsole(m.data);
+    } else if (m.type === "stderr") {
+      appendErr(m.data);
+    } else if (m.type === "done") {
+      setRunning(false);
+    }
+  };
+}
+
+runBtn.addEventListener("click", () => {
+  if (running) return;
+  startWorker();
   output.textContent = "";
-  consoleInput.style.display = "none";
   const code = editor.getValue();
+  const sab = new SharedArrayBuffer(4096);
   inputSignal = new Int32Array(new SharedArrayBuffer(8));
-  inputBuffer = new Uint8Array(new SharedArrayBuffer(65536));
+  sharedBuf = new Uint8Array(sab);
+  setRunning(true);
   worker.postMessage({
     type: "run",
     code,
     signal: inputSignal,
-    buffer: inputBuffer.buffer,
+    buffer: sab,
   });
 });
 
-consoleInput.addEventListener("keydown", (e) => {
-  if (!awaiting) return;
-  if (e.key === "Enter" && !e.shiftKey) {
+stopBtn.addEventListener("click", () => stopRun());
+
+function stopRun() {
+  if (!worker) return;
+  worker.postMessage({ type: "abort" });
+  setTimeout(() => {
+    try {
+      worker.terminate();
+    } catch {}
+    setRunning(false);
+  }, 100);
+}
+
+uploadBtn.addEventListener("click", () => {
+  fileInput.value = "";
+  fileInput.click();
+});
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const text = await file.text();
+  editor.setValue(text);
+});
+
+downloadBtn.addEventListener("click", () => {
+  const blob = new Blob([editor.getValue()], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "code.cpp";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+stdinEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
     e.preventDefault();
-    const value = consoleInput.value;
-    output.textContent += value + "\n";
-    output.parentElement.scrollTop = output.parentElement.scrollHeight;
-    consoleInput.style.display = "none";
-    awaiting = false;
-    const bytes = new TextEncoder().encode(value + "\n");
-    inputBuffer.set(bytes);
-    Atomics.store(inputSignal, 1, bytes.length);
-    Atomics.store(inputSignal, 0, 1);
-    Atomics.notify(inputSignal, 0);
+    const s = stdinEl.value + "\n";
+    appendToConsole(s);
+    hidePrompt();
+    const bytes = new TextEncoder().encode(s);
+    sharedBuf.set(bytes.subarray(0, sharedBuf.length));
+    Atomics.store(inputSignal, 1, Math.min(bytes.length, sharedBuf.length));
+    Atomics.notify(inputSignal, 0, 1);
   }
 });
 

@@ -70,5 +70,14 @@ onmessage = async (e) => {
     } catch (err) {
       postMessage({ type: "stderr", data: err.toString() + "\n" });
     }
+  } else if (type === "abort") {
+    try {
+      if (inputSignal) {
+        Atomics.store(inputSignal, 1, 0);
+        Atomics.notify(inputSignal, 0, 1);
+      }
+    } catch {}
+    postMessage({ type: "stderr", data: "[Aborted]\n" });
+    self.close();
   }
 };
