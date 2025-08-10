@@ -1,5 +1,5 @@
-const base = "/toolchain/";
-const TOOLCHAIN_BASE = "/toolchain/";
+const TOOLCHAIN_BASE = "/toolchain/"; // for clang/lld
+const ASSETS_BASE = "/third_party/wasm-clang/"; // for small local files
 
 // Refuse to run if SAB is not available (should be guaranteed by page checks)
 if (!("SharedArrayBuffer" in self)) {
@@ -11,7 +11,7 @@ if (!("SharedArrayBuffer" in self)) {
 }
 
 // Load helper script
-importScripts(base + "shared.js");
+importScripts(ASSETS_BASE + "shared.js");
 
 let api;
 let stdinBuffer = new Uint8Array(0);
