@@ -107,6 +107,9 @@ onmessage = async (e) => {
       stdinPos = 0;
       inputSignal = signal;
       sharedInput = new Uint8Array(buffer);
+      // Make visible to shared.js (MemFS.host_read)
+      self.__inputSignal = inputSignal;
+      self.__sharedInput = sharedInput;
       await api.compileLinkRun(code);
       postMessage({ type: "done" });
     } catch (err) {
