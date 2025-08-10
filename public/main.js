@@ -47,6 +47,9 @@ const stdinRow = document.getElementById("stdin-row");
 const stdinEl = document.getElementById("stdin");
 const runBtn = document.getElementById("runBtn");
 const stopBtn = document.getElementById("stopBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const fileInput = document.getElementById("fileInput");
 let worker = null;
 let running = false;
 let inputSignal;
@@ -129,6 +132,30 @@ function stopRun() {
     setRunning(false);
   }, 100);
 }
+
+uploadBtn.addEventListener("click", () => {
+  fileInput.value = "";
+  fileInput.click();
+});
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const text = await file.text();
+  editor.setValue(text);
+});
+
+downloadBtn.addEventListener("click", () => {
+  const blob = new Blob([editor.getValue()], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "code.cpp";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
 
 stdinEl.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
