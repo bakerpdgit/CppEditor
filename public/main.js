@@ -72,6 +72,7 @@ function showPrompt() {
 function hidePrompt() {
   stdinRow.hidden = true;
   stdinEl.value = "";
+  stdinEl.blur();
 }
 
 function setRunning(on) {

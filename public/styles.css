@@ -79,13 +79,15 @@ html, body {
 
 #console-panel {
   position: relative;
+  font: 14px/1.4 monospace;
 }
 
 .stdin-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font: 14px/1.4 monospace;
+  padding: 0 8px 8px;
+  font: inherit;
 }
 
 .stdin-input {
