@@ -2,7 +2,7 @@
 
 const OWNER = "bakerpdgit";
 const REPO = "CppEditor";
-const TAG = "toolchain-v1";
+const TAG = "Toolchain-v1";
 const GH = `https://github.com/${OWNER}/${REPO}/releases/download/${TAG}`;
 
 const SOURCES = {
