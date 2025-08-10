@@ -3,8 +3,6 @@ const SOURCES = {
   clang: "https://github.com/binji/wasm-clang/raw/refs/heads/master/clang",
   lld: "https://github.com/binji/wasm-clang/raw/refs/heads/master/lld",
   "wasm-ld": "https://github.com/binji/wasm-clang/raw/refs/heads/master/lld", // alias
-  "sysroot.tar": "/third_party/wasm-clang/sysroot.tar", // small; you host this in public/
-  "shared.js": "/third_party/wasm-clang/shared.js", // small; you host this in public/
 };
 
 const CT = {
