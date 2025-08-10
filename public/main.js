@@ -96,15 +96,17 @@ function hidePrompt() {
 
 function sendInput(s) {
   const bytes = new TextEncoder().encode(s);
+  sharedBuf.fill(0);
   sharedBuf.set(bytes.subarray(0, sharedBuf.length));
   Atomics.store(inputSignal, 1, Math.min(bytes.length, sharedBuf.length));
+  Atomics.store(inputSignal, 0, 1);
   Atomics.notify(inputSignal, 0, 1);
 }
 
 function feedFixedInput() {
   const line = fixedIndex < fixedLines.length ? fixedLines[fixedIndex++] : "";
   const s = line + "\n";
-  appendToConsole("> " + s);
+  appendToConsole(s);
   sendInput(s);
 }
 
@@ -125,7 +127,7 @@ function activateTab(which) {
 function updateInputsVisibility() {
   if (useFixedInputs) {
     tabInputs.style.display = "block";
-    inputsPanel.style.display = "block";
+    inputsPanel.style.display = "";
   } else {
     tabInputs.style.display = "none";
     inputsPanel.style.display = "none";
@@ -146,10 +148,10 @@ function startWorker() {
   worker.onmessage = (e) => {
     const m = e.data;
     if (m.type === "requestInput") {
+      appendToConsole("> ", true);
       if (useFixedInputs) {
         feedFixedInput();
       } else {
-        appendToConsole("> ", true);
         showPrompt();
       }
     } else if (m.type === "stdout") {
