@@ -249,57 +249,44 @@ const API = (function () {
 
     host_read(fd, iovs, iovs_len, nread) {
       this.hostMem_.check();
-      if (fd !== 0) {
-        // Non-stdin: keep default behaviour
-        return ESUCCESS;
-      }
 
-      // Use globals the worker sets before running
-      const signal = self.__inputSignal;
-      const shared = self.__sharedInput; // Uint8Array view of a SAB
-      if (!signal || !shared) {
-        // During compile/link there is no stdin; report 0 bytes.
+      // Only intercept stdin
+      if (fd !== 0) {
         this.hostMem_.write32(nread, 0);
         return ESUCCESS;
       }
 
-      let size = 0;
-      for (let i = 0; i < iovs_len; ++i) {
-        const buf = this.hostMem_.read32(iovs);
-        iovs += 4;
-        const len = this.hostMem_.read32(iovs);
-        iovs += 4;
-
-        // Wait until main thread provides bytes
-        while (true) {
-          Atomics.store(signal, 0, 0);
-          // Ask UI for input
-          postMessage({ type: "requestInput" });
-          // Block until notified
-          Atomics.wait(signal, 0, 0);
-
-          const received = Atomics.load(signal, 1);
-          if (received <= 0) {
-            // EOF
-            this.hostMem_.write32(nread, size);
-            return ESUCCESS;
-          }
-
-          // Copy as much as fits in this iov
-          const toCopy = Math.min(len, received);
-          this.hostMem_.write(buf, shared.subarray(0, toCopy));
-          size += toCopy;
-
-          // Consume what we reported, clear length for next read
-          Atomics.store(signal, 1, 0);
-
-          // If iov still has space, loop to wait for more
-          if (toCopy < len) continue;
-          break;
-        }
+      const signal = self.__inputSignal;
+      const shared = self.__sharedInput; // Uint8Array view over a SAB
+      if (!signal || !shared) {
+        // During compile/link or non-interactive runs, no stdin
+        this.hostMem_.write32(nread, 0);
+        return ESUCCESS;
       }
 
-      this.hostMem_.write32(nread, size);
+      // Ask UI for a line, then block until it arrives
+      Atomics.store(signal, 0, 0); // state = waiting
+      postMessage({ type: "requestInput" }); // show prompt on UI thread
+      Atomics.wait(signal, 0, 0); // sleep until notified
+
+      const received = Atomics.load(signal, 1); // number of bytes the UI wrote
+      if (received <= 0) {
+        // EOF
+        this.hostMem_.write32(nread, 0);
+        return ESUCCESS;
+      }
+
+      // Fill only the first iov with as much as we have (short read is OK)
+      const buf = this.hostMem_.read32(iovs);
+      const len = this.hostMem_.read32(iovs + 4);
+      const toCopy = Math.min(len, received);
+
+      this.hostMem_.write(buf, shared.subarray(0, toCopy));
+      this.hostMem_.write32(nread, toCopy);
+
+      // Consume what we reported so next read can wait for fresh input
+      Atomics.store(signal, 1, 0);
+
       return ESUCCESS;
     }
 
