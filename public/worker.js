@@ -1,4 +1,4 @@
-const base = "/third_party/wasm-clang/";
+const base = "/toolchain/";
 const TOOLCHAIN_BASE = "/toolchain/";
 
 // Refuse to run if SAB is not available (should be guaranteed by page checks)
