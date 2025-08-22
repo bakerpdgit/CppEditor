@@ -38,7 +38,7 @@ require(["vs/editor/editor.main"], function () {
     value:
       '#include <iostream>\n\nint main(){\n    std::string name;\n    std::cout << "Enter your name:" << std::endl;\n    std::getline(std::cin, name);\n    std::cout << "Hello " << name << "!" << std::endl;\n}\n\n',
     language: "cpp",
-    theme: "vs-dark",
+    theme: "vs",
     automaticLayout: true,
   });
 });
@@ -55,6 +55,7 @@ const fileInput = document.getElementById("fileInput");
 const optionsBtn = document.getElementById("optionsBtn");
 const optionsModal = document.getElementById("options-modal");
 const useFixedInputsChk = document.getElementById("use-fixed-inputs");
+const useDarkModeChk = document.getElementById("use-dark-mode");
 const optionsOk = document.getElementById("options-ok");
 const tabConsole = document.getElementById("tab-console");
 const tabInputs = document.getElementById("tab-inputs");
@@ -66,6 +67,7 @@ let running = false;
 let inputSignal;
 let sharedBuf;
 let useFixedInputs = false;
+let useDarkMode = false;
 let fixedLines = [];
 let fixedIndex = 0;
 
@@ -138,6 +140,19 @@ function updateInputsVisibility() {
     tabInputs.style.display = "none";
     inputsPanel.style.display = "none";
     activateTab("console");
+  }
+}
+
+function updateDarkMode() {
+  if (useDarkMode) {
+    document.body.classList.add("dark-mode");
+  } else {
+    document.body.classList.remove("dark-mode");
+  }
+  
+  // Update Monaco editor theme
+  if (editor) {
+    monaco.editor.setTheme(useDarkMode ? "vs-dark" : "vs");
   }
 }
 
@@ -249,7 +264,9 @@ optionsBtn.addEventListener("click", () => {
 optionsOk.addEventListener("click", () => {
   optionsModal.classList.remove("active");
   useFixedInputs = useFixedInputsChk.checked;
+  useDarkMode = useDarkModeChk.checked;
   updateInputsVisibility();
+  updateDarkMode();
   if (useFixedInputs) {
     activateTab("inputs");
     inputsArea.focus();

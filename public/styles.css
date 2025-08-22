@@ -3,6 +3,27 @@ html, body {
   margin: 0;
 }
 
+/* CSS Custom Properties for theming */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e0e0e0;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --modal-bg: #ffffff;
+  --modal-text: #000000;
+}
+
+body.dark-mode {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3e3e3e;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --modal-bg: #2d2d2d;
+  --modal-text: #ffffff;
+}
+
 .main-content {
   position: absolute;
   top: 0;
@@ -11,6 +32,8 @@ html, body {
   bottom: 0;
   display: flex;
   flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .mdc-top-app-bar {
@@ -32,7 +55,7 @@ html, body {
 .console-controls {
   display: flex;
   justify-content: flex-end;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
 }
 
 .control-btn {
@@ -40,11 +63,12 @@ html, body {
   background: transparent;
   cursor: pointer;
   padding: 2px 4px;
+  color: var(--text-primary);
 }
 
 .tabs {
   display: flex;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
 }
 
 .tab {
@@ -53,10 +77,11 @@ html, body {
   border: none;
   background: transparent;
   cursor: pointer;
+  color: var(--text-primary);
 }
 
 .tab.active {
-  background: #e0e0e0;
+  background: var(--bg-tertiary);
 }
 
 .panel {
@@ -123,10 +148,10 @@ html, body {
 }
 
 .modal-content {
-  background: #ffffff;
+  background: var(--modal-bg);
   padding: 16px;
   border-radius: 4px;
-  color: #000000;
+  color: var(--modal-text);
   width: 420px;
   max-width: 90%;
 }
